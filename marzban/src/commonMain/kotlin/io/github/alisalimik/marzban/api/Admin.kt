@@ -6,9 +6,8 @@ import io.github.alisalimik.marzban.UrlEncoder.setForm
 import io.github.alisalimik.marzban.model.ApiResult
 import io.github.alisalimik.marzban.model.admin.Admin
 import io.github.alisalimik.marzban.model.admin.TokenResponse
-import io.ktor.client.request.get
-import io.ktor.client.request.post
-import io.ktor.http.HttpMethod
+import io.ktor.client.request.*
+import io.ktor.http.*
 
 object Admin {
     suspend fun token(
@@ -28,15 +27,11 @@ object Admin {
     }
 
     suspend fun get(): ApiResult<Admin> {
-        return makeApiRequest {
-            get("/api/admin")
-        }
+        return makeAuthorizedRequest("/api/admin")
     }
 
     suspend fun all(): ApiResult<List<Admin>> {
-        return makeApiRequest {
-            get("/api/admins")
-        }
+        return makeAuthorizedRequest("/api/admins")
     }
 
     suspend fun add(admin: Admin): ApiResult<Admin> {

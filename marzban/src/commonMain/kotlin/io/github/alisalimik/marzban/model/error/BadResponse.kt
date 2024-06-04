@@ -4,5 +4,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class BadResponse(
-    val detail: List<Detail>,
+    val detail: String//List<Detail>,
 )

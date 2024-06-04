@@ -13,7 +13,7 @@ data class SystemStats(
     @SerialName("cpu_cores")
     val cpuCores: Long,
     @SerialName("cpu_usage")
-    val cpuUsage: Long,
+    val cpuUsage: Float,
     @SerialName("total_user")
     val totalUser: Long,
     @SerialName("users_active")
