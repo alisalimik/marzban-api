@@ -57,7 +57,7 @@ publishing {
         create<MavenPublication>("maven") {
             groupId = "io.github.alisalimik.marzban"
             artifactId = "marzban"
-            version = "1.0.1"
+            version = "1.1.0"
 
             from(components["kotlin"])
         }

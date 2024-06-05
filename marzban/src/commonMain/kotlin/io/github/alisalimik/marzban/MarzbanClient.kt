@@ -1,5 +1,6 @@
 package io.github.alisalimik.marzban
 
+import io.github.alisalimik.marzban.api.*
 import io.github.alisalimik.marzban.model.ApiResult
 import io.github.alisalimik.marzban.model.MarzbanConfig
 import io.github.alisalimik.marzban.model.error.BadResponse
@@ -16,19 +17,23 @@ import io.ktor.serialization.kotlinx.json.*
 import io.ktor.utils.io.errors.*
 import kotlinx.serialization.json.Json
 
-object Client {
-    lateinit var config: MarzbanConfig
+class MarzbanClient(var config: MarzbanConfig) {
+    val system = System(this)
+    val core = Core(this)
+    val node = Node(this)
+    val subscription = Subscription(this)
+    val user = User(this)
+    val admin = Admin(this)
+    val userTemplate = UserTemplate(this)
+
     private var engine: HttpClientEngine = CIO.create()
-    fun initConfig(config: MarzbanConfig) {
-        this.config = config
-    }
 
     private val json by lazy {
         Json {
             ignoreUnknownKeys = true
         }
     }
-    val httpClient by lazy {
+    private val httpClient by lazy {
         HttpClient(engine) {
             install(ContentNegotiation) {
                 json(json = json)
@@ -43,7 +48,7 @@ object Client {
         }
     }
 
-    suspend inline fun <reified T> makeAuthorizedRequest(
+    internal suspend inline fun <reified T> makeAuthorizedRequest(
         path: String,
         method: HttpMethod = HttpMethod.Get,
         body: Any? = null,
@@ -75,31 +80,34 @@ object Client {
         }
     }
 
-    suspend inline fun <reified T> makeApiRequest(crossinline request: suspend HttpClient.() -> HttpResponse): ApiResult<T> {
-        return try {
+    internal suspend inline fun <reified T> makeApiRequest(crossinline request: suspend HttpClient.() -> HttpResponse): ApiResult<T> {
+        try {
             val response = httpClient.request()
             when (response.status.value) {
                 in 200..299 -> { // Successful response
                     val data = response.body<T>()
-                    ApiResult.Success(data)
+                    return ApiResult.Success(data)
                 }
 
                 else -> { // Handle other status codes as errors
-                    val badResponse = response.body<BadResponse?>()
-                    if (badResponse != null) {
-                        ApiResult.ErrorResponse(response.status.value, badResponse)
-                    } else {
-                        val message = response.body<String>() // Get error message from response body
-                        ApiResult.Error(Exception("API Error: $message"))
+                    val badText = response.body<BadResponse.TextDetail?>()
+                    if (badText != null) {
+                        return ApiResult.ErrorResponse(response.status.value, badText)
                     }
+                    val badList = response.body<BadResponse.ListDetail?>()
+                    if (badList != null) {
+                        return ApiResult.ErrorResponse(response.status.value, badList)
+                    }
+                    val message = response.body<String>() // Get error message from response body
+                    return ApiResult.Error(Exception("API Error: $message"))
                 }
             }
         } catch (e: IOException) {
             // Network exceptions
-            ApiResult.Error(Exception("Network Error: ${e.message}"))
+            return ApiResult.Error(Exception("Network Error: ${e.message}"))
         } catch (e: Exception) {
             // Other unexpected exceptions
-            ApiResult.Error(Exception("Unexpected Error: ${e.message}"))
+            return ApiResult.Error(Exception("Unexpected Error: ${e.message}"))
         }
     }
 }

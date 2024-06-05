@@ -23,7 +23,7 @@ Use the provided API endpoints to interact with the Marzban panel.
 ## Example Usage
 
 ```kotlin
-import io.github.alisalimik.marzban.Client
+import io.github.alisalimik.marzban.MarzbanClient
 import io.github.alisalimik.marzban.MarzbanConfig
 import io.github.alisalimik.marzban.api.User
 import kotlinx.coroutines.runBlocking
@@ -34,14 +34,14 @@ fun main() {
         url = "https://your-marzban-panel.com",
         token = "your-auth-token"
     )
-    Client.initConfig(marzbanConfig)
+    val client = MarzbanClient(marzbanConfig)
 
     // Get user information
     runBlocking {
-        val result = User.get(username = "your-username")
+        val result = client.admin.get()
         when (result) {
             is ApiResult.Success -> {
-                println("User Information: ${result.data}")
+                println("Admin Information: ${result.data}")
             }
             is ApiResult.ErrorResponse -> {
                 println("Error: ${result.response}")

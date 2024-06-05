@@ -1,17 +1,17 @@
 package io.github.alisalimik.marzban.api
 
-import io.github.alisalimik.marzban.Client.makeAuthorizedRequest
+import io.github.alisalimik.marzban.MarzbanClient
 import io.github.alisalimik.marzban.model.ApiResult
 import io.github.alisalimik.marzban.model.template.NewTemplate
 import io.github.alisalimik.marzban.model.template.Template
-import io.ktor.http.HttpMethod
+import io.ktor.http.*
 
-object UserTemplate {
+class UserTemplate(private val client: MarzbanClient) {
     suspend fun get(
         offset: Int,
         limit: String,
     ): ApiResult<List<Template>> {
-        return makeAuthorizedRequest(
+        return client.makeAuthorizedRequest(
             "/api/user_template",
             body =
                 mapOf(
@@ -22,15 +22,15 @@ object UserTemplate {
     }
 
     suspend fun add(newTemplate: NewTemplate): ApiResult<Unit> {
-        return makeAuthorizedRequest("/api/user_template", HttpMethod.Post, body = newTemplate)
+        return client.makeAuthorizedRequest("/api/user_template", HttpMethod.Post, body = newTemplate)
     }
 
     suspend fun getById(id: Int): ApiResult<Template> {
-        return makeAuthorizedRequest("/api/user_template/$id")
+        return client.makeAuthorizedRequest("/api/user_template/$id")
     }
 
     suspend fun edit(template: Template): ApiResult<Template> {
-        return makeAuthorizedRequest(
+        return client.makeAuthorizedRequest(
             "/api/user_template/${template.id}",
             HttpMethod.Put,
             template,
@@ -38,6 +38,6 @@ object UserTemplate {
     }
 
     suspend fun delete(id: Int): ApiResult<Any> {
-        return makeAuthorizedRequest<Any>("/api/user_template/$id", HttpMethod.Delete)
+        return client.makeAuthorizedRequest<Any>("/api/user_template/$id", HttpMethod.Delete)
     }
 }
